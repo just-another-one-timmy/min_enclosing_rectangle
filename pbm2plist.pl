@@ -17,7 +17,7 @@ my @resultX = ();
 my @resultY = ();
 
 # reading all characters from file
-print "Height = $height\nWidth = $width\n";
+# print "Height = $height\nWidth = $width\n";
 while ($line = <>) {
     chomp($line);
     foreach my $char (split //, $line) {
@@ -34,7 +34,7 @@ while ($line = <>) {
 }
 
 # writing all points back
-print scalar(@resultX) . "\n";
+# print scalar(@resultX) . "\n";
 for (my $i = 0; $i < scalar(@resultX); $i++) {
   print "$resultX[$i] $resultY[$i]\n"; 
 }
