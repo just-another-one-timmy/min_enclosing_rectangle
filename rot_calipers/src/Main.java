@@ -6,11 +6,7 @@ public class Main {
     final double eps = 1e-3;
 
     public static void main(String[] args) {
-        int needNo = -1;
-        if (args.length > 0) {
-            needNo = Integer.parseInt(args[0]);
-        }
-        new Main().main(needNo);
+        new Main().main();
     }
     ArrayList<Vector2d> originalImage = null;
     ArrayList<Vector2d> convexHull = null;
@@ -24,6 +20,8 @@ public class Main {
     double[] caliperAngles = null;
     double[] A = null, B = null, C = null; // for line equations
     ArrayList<Vector2d[]> rects = new ArrayList<Vector2d[]>();
+    int minAreaRectNo = -1;
+    ArrayList<Vector2d> highlightCircles = new ArrayList<Vector2d>();
 
     void inputPoints() {
         Scanner in = new Scanner(System.in);
@@ -51,16 +49,9 @@ public class Main {
                     next = (i + 1) % convexHull.size();
             Vector2d vNext = convexHull.get(next).subtract(convexHull.get(i)),
                     vPrev = convexHull.get(i).subtract(convexHull.get(prev));
-            //System.out.println("i = " + i);
-            //System.out.println("vNext = " + vNext);
-            //System.out.println("vPrev = " + vPrev);
             cosAngles.add(vNext.calculateAngleCos(vPrev));
             angles.add(Math.acos(cosAngles.get(cosAngles.size() - 1)));
         }
-        //for (int i = 0; i < angles.size(); i++) {
-        //    double c = cosAngles.get(i), a = angles.get(i);
-        //    System.out.println(c + " -> " + toDeg(a));
-        //}
     }
 
     void findBoundingCoords() {
@@ -102,10 +93,6 @@ public class Main {
                 pointNumber[3] = i;
             }
         }
-        //System.out.println("Starting rect:");
-        //for (Vector2d s : calipers) {
-        //    System.out.println(s);
-        //}
     }
 
     // makes vector from points[vertexNumber] to points[vertexNumber+1]
@@ -120,18 +107,20 @@ public class Main {
             for (int i = 0; i < calipers.length; i++) {
                 Vector2d calipersDir = calipers[i];
                 Vector2d sideDir = makeVector(pointNumber[i]);
-                //System.out.println("i = " + i);
-                //System.out.println("calipersDir = " + calipersDir);
-                //System.out.println("side = " + sideDir);
+
                 caliperAngles[i] = Math.acos(calipersDir.calculateAngleCos(sideDir));
-                //System.out.println("angle = " + toDeg(caliperAngles[i]));
+                
+                if (Double.isNaN(caliperAngles[i])) {
+                    System.out.println("Nan occured: ");
+                    System.out.println(calipersDir + "   *   " + sideDir);
+                    System.out.println("<br>cos = " +calipersDir.calculateAngleCos(sideDir)  +"</br>");
+                    outputCircle(convexHull.get(pointNumber[i]).x, convexHull.get(pointNumber[i]).y, 100, " style='stroke:red'");
+                }
+                
                 if (Math.abs(caliperAngles[i]) < eps) {
                     pointNumber[i] = (pointNumber[i] + 1) % convexHull.size();
                     needRecompute = true;
                 }
-            }
-            if (needRecompute) {
-                //System.out.println("Zero angles exist, recomputing needed");
             }
         } while (needRecompute);
     }
@@ -144,25 +133,84 @@ public class Main {
         return new Vector2d((e * d - b * f) / det, (a * f - e * c) / det);
     }
 
-    void findIntersections(boolean addRect) {
+    void findIntersections() {
         Vector2d[] rect = new Vector2d[4];
         for (int i = 0; i < calipers.length; i++) {
             int next = (i + 1) % calipers.length;
             Vector2d p = findIntersection(A[i], B[i], A[next], B[next], -C[i], -C[next]);
             rect[i] = p;
-            //System.out.println("Intersection point " + i + ": " + p);
         }
-        if (addRect) {
-            rects.add(rect);
+        rects.add(rect);
+        for (int i = 0; i < calipers.length; i++) {
+            highlightCircles.add(convexHull.get(pointNumber[i]));
         }
     }
 
-    void doRotatingIterations(int needNo) {
+    void outputCircle(double x, double y, double r, String style) {
+        System.out.println("<circle cx = '" + x +"' cy='"+y+"' r='"+r+"' "+style+" />");
+    }
+    
+    void outputTouchingPoints() {
+        for (int x: pointNumber) {
+            Vector2d p = convexHull.get(x);
+            outputCircle(p.x, p.y, 1, " style=\"stroke:gold\"");
+        }
+    }
+    
+    void outputLine(Vector2d b, Vector2d e, String style) {
+        System.out.print("<polyline points=\" ");
+        
+        System.out.print(b.x+","+b.y+" ");
+        System.out.print(e.x+","+e.y+" ");
+        
+        System.out.println("\"" + style+" />");
+    }
+    
+    void outputCalipers() {
+        /*
+        for (int i = 0; i < calipers.length; i++) {
+            Vector2d c = calipers[i];
+            Vector2d p = convexHull.get(pointNumber[i]);
+            
+            Vector2d one = new Vector2d(p.x + c.x*100, p.y + c.y*100);
+            Vector2d two = new Vector2d(p.x - c.x*100, p.y - c.y*100);
+            
+            outputLine(one, two, " style=\"stroke:red\"");
+        }*/
+        Vector2d[] rect = rects.get(rects.size()-1);
+        for (int i = 0; i < rect.length; i++) {
+            outputLine(rect[i], rect[(i+1)%rect.length], " style=\"stroke:red\"");
+        }
+    }
+    
+    void outputCurrentSituation(double minAngle) {
+        System.out.println("Highlighted points: ");
+        for (int x: pointNumber) {
+            System.out.print(" "+x);
+        }
+        System.out.println("<br>Preparing to rotate by " + minAngle+" degrees<br>");
+        System.out.println("Calipers angles = <ul>");
+        for (double a: caliperAngles) {
+            System.out.println("<li>"+toDeg(a)+"</li>");
+        }
+        System.out.println("</ul>");
+        
+        System.out.println("<svg width='600' height='600' transofmation='scale(1)'>");
+        
+        outputOriginalImage();
+        outputConvexHullPolygon();
+        outputConvexHullPoints();
+        outputTouchingPoints();
+        outputCalipers();
+        
+        System.out.println("</svg>");
+    }
+    
+    void doRotatingIterations() {
         double overallAngle = 0;
-        int iterationNo = 0;
+        double minArea = Double.MAX_VALUE;
+                
         while (overallAngle < Math.PI / 2) {
-
-            //System.out.println("Now lines are:");
             for (int i = 0; i < calipers.length; i++) {
                 Vector2d p = convexHull.get(pointNumber[i]);
                 A[i] = calipers[i].y;
@@ -170,9 +218,18 @@ public class Main {
                 C[i] = -p.x * calipers[i].y + p.y * calipers[i].x;
             }
 
-            findIntersections(iterationNo == needNo);
+            findIntersections();
 
-            //System.out.println("iteration! overallAngle = " + overallAngle);
+            Vector2d[] r = rects.get(rects.size() - 1);
+
+
+            Vector2d side1 = r[1].subtract(r[0]), side2 = r[2].subtract(r[1]);
+            double curArea = side1.length() * side2.length();
+            if (curArea < minArea) {
+                minArea = curArea;
+                minAreaRectNo = rects.size() - 1;
+            }
+
             int minAngleNum = 0;
 
             for (int i = 0; i < caliperAngles.length; i++) {
@@ -180,26 +237,31 @@ public class Main {
                     minAngleNum = i;
                 }
             }
-
             overallAngle += caliperAngles[minAngleNum];
-
-            System.out.println("Rotating by " + toDeg(caliperAngles[minAngleNum]));
-
+            outputCurrentSituation(toDeg(caliperAngles[minAngleNum]));
+            
             for (int i = 0; i < calipers.length; i++) {
-                //System.out.print(calipers[i] + " (rotating) --> ");
                 calipers[i] = calipers[i].rotate(caliperAngles[minAngleNum]);
-                //System.out.println(calipers[i]);
             }
 
             computeCalipersAngles();
-            iterationNo++;
         }
     }
 
+    void startHtml() {
+        System.out.println("<html><body>");
+    }
+    void endHtml() {
+        System.out.println("</body></html>");
+    }
+    
+    
     void output() {
         System.out.println("<html><body><svg width=\"1000\" height=\"1000\"><g transform=\"translate(10,20) scale(1)\">");
         outputOriginalImage();
-        outputConvexHull();
+        outputConvexHullPolygon();
+        outputConvexHullPoints();
+        outputHighlightCircles();
         outputRects();
         System.out.println("</g></svg></body></html>");
     }
@@ -210,7 +272,13 @@ public class Main {
         }
     }
 
-    void outputConvexHull() {
+    void outputHighlightCircles() {
+        for (Vector2d p : highlightCircles) {
+            System.out.println("<circle cx=\"" + p.x + "\" cy=\"" + p.y + "\" r=\"3\" style=\"stroke:gold\"/>");
+        }
+    }
+
+    void outputConvexHullPolygon() {
         System.out.print("<polygon points=\"");
 
         for (Vector2d p : convexHull) {
@@ -220,23 +288,32 @@ public class Main {
         System.out.println("\" style=\"fill:none; stroke:DarkGreen;stroke-width:1\" />");
     }
 
-    void outputRects() {
-        for (Vector2d[] rect : rects) {
-            System.out.print("<polygon points=\"");
-            for (Vector2d p : rect) {
-                System.out.print(p.x + "," + p.y + " ");
-            }
-            System.out.println("\" style=\"fill:none; stroke:DarkRed;stroke-width:1\" />");
+    void outputConvexHullPoints() {
+        for (Vector2d p: convexHull) {
+            outputCircle(p.x, p.y, 2, " style='stroke:black'");
         }
     }
+    
+    void outputRects() {
+        //for (Vector2d[] rect : rects) {
+        System.out.print("<polygon points=\"");
+        Vector2d[] rect = rects.get(minAreaRectNo);
+        for (Vector2d p : rect) {
+            System.out.print(p.x + "," + p.y + " ");
+        }
+        System.out.println("\" style=\"fill:none; stroke:DarkRed;stroke-width:1\" />");
+        //}
+    }
 
-    void main(int needNo) {
+    void main() {
         inputPoints();
         calculateAngles();
         findBoundingCoords();
         makeCalipers();
         computeCalipersAngles();
-        doRotatingIterations(needNo);
-        output();
+        startHtml();
+        doRotatingIterations();
+        endHtml();
+        //output();
     }
 }

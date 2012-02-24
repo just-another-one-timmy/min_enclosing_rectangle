@@ -31,13 +31,16 @@ public class Vector2d {
     }
 
     public double calculateAngleCos(Vector2d other) {
-        return this.scalarMultiplication(other) / (this.length() * other.length());
+        double res = this.scalarMultiplication(other) / (this.length() * other.length());
+        res = Math.max(res, -1.0);
+        res = Math.min(res, +1.0);
+        return res;
     }
 
     public Vector2d rotate(double angle) {
         double cosa = Math.cos(angle), sina = Math.sin(angle);
-        double newx = x*cosa - y*sina;
-        double newy = x*sina + y*cosa;
+        double newx = x * cosa - y * sina;
+        double newy = x * sina + y * cosa;
         return new Vector2d(newx, newy);
     }
 }
