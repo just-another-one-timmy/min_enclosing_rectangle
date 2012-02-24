@@ -1,2 +1,6 @@
 PBM format - http://netpbm.sourceforge.net/doc/pbm.html
 Convex hull source code - http://cm.bell-labs.com/who/clarkson/2dch.c
+
+Sample usage: 
+$ ./pbm2plist.pl < samples/rects.pbm  | ./2dch | java -jar rot_calipers/dist/rot_calipers.jar > res0.html
+
