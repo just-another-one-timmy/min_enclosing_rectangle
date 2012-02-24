@@ -20,8 +20,10 @@
  * two-dimensional convex hull
  * read points from stdin,
  *      one point per line, as two numbers separated by whitespace
- * on stdout, points on convex hull in order around hull, given
- *      by their numbers in input order
+ *
+ * on stdout, number of points and n lines with points coordinates, then
+ *      then number of points in convex hull and m lines with points coordinates
+ *
  * the results should be "robust", and not return a wildly wrong hull,
  *	despite using floating point
  * works in O(n log n); I think a bit faster than Graham scan;
@@ -43,8 +45,9 @@ char input_format[] = "%lf%lf";
 #define N 100000
 
 coord points[N][2], *P[N+1]; /* an extra position is used */
+int points_n;
 
-int read_points(void) {
+void read_points(void) {
 	int n = 0;
 	char buf[100];
 	while (fgets(buf, sizeof(buf), stdin)) {
@@ -52,10 +55,19 @@ int read_points(void) {
 		P[n] = points[n];
 		assert(++n <= N);
 	}
-	return n;
+	points_n = n;
+}
+
+void print_points(void) {
+	printf("%d\n", points_n);
+	int i;
+	for (i=0; i<points_n; i++) {
+		printf("%lf %lf\n", points[i][0], points[i][1]);
+	}
 }
 
 void print_hull(coord **P, int m) {
+	printf("%d\n", m);
 	int i;
 	for (i=0; i<m; i++) {
 		int num = ((P[i] - points[0])/2);
@@ -108,8 +120,9 @@ int ch2d(coord **P, int n)  {
 	return u+make_chain(P+u, n-u+1, cmph);	/* make upper hull */
 }
 
-
 void main(int argc, char** argv) {
-	print_hull(P, ch2d(P, read_points()));
+	read_points();
+	print_points();
+	print_hull(P, ch2d(P, points_n));
 	exit(0);
 }
