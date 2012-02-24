@@ -8,7 +8,9 @@ public class Vector2d {
         return "(" + x + "; " + y + ")";
     }
 
-    public Vector2d() {
+    public Vector2d(Vector2d from) {
+        this.x = from.x;
+        this.y = from.y;
     }
 
     public Vector2d(double x, double y) {
@@ -30,5 +32,12 @@ public class Vector2d {
 
     public double calculateAngleCos(Vector2d other) {
         return this.scalarMultiplication(other) / (this.length() * other.length());
+    }
+
+    public Vector2d rotate(double angle) {
+        double cosa = Math.cos(angle), sina = Math.sin(angle);
+        double newx = x*cosa - y*sina;
+        double newy = x*sina + y*cosa;
+        return new Vector2d(newx, newy);
     }
 }
