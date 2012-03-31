@@ -1,11 +1,14 @@
 
+import java.io.*;
 import java.util.*;
 
 public class Main {
 
     final double eps = 1e-3;
 
-    public static void main(String[] args) {
+    int svgCount = 0;
+    
+    public static void main(String[] args) throws FileNotFoundException {
         new Main().main();
     }
     ArrayList<Vector2d> originalImage = null;
@@ -143,14 +146,14 @@ public class Main {
         rects.add(rect);
     }
 
-    void outputCalipers() {
+    void outputCalipers(PrintWriter pw) {
         Vector2d[] rect = rects.get(rects.size() - 1);
         for (int i = 0; i < rect.length; i++) {
-            SvgFormatter.line(rect[i], rect[(i + 1) % rect.length], "red");
+            SvgFormatter.line(pw, rect[i], rect[(i + 1) % rect.length], "red");
         }
     }
 
-    void outputCurrentSituation(double minAngle, double overallAngle, int iteration, double currentArea) {
+    void outputCurrentSituation(double minAngle, double overallAngle, int iteration, double currentArea) throws FileNotFoundException {
         System.out.println("Iteration #" + iteration + "<br>");
         System.out.println("Overall angle = " + overallAngle);
         System.out.println("Current area = " + currentArea);
@@ -161,22 +164,24 @@ public class Main {
         System.out.println("</ul>");
         System.out.println("<br>Preparing to rotate by " + minAngle + " degrees<br>");
 
-        SvgFormatter.startSvg(imageWidth, imageHeight);
-        SvgFormatter.points(originalImage, "black");
-        SvgFormatter.polygon(convexHull, "darkGreen");
+        PrintWriter pw = new PrintWriter(new File("img"+(svgCount++)+".svg"));
+        // this will be later converted to png!
+        SvgFormatter.startSvg("img"+svgCount+".png", pw, imageWidth, imageHeight);
+        SvgFormatter.points(pw, originalImage, "black");
+        SvgFormatter.polygon(pw, convexHull, "darkGreen");
 
         for (int i : pointNumber) {
             Vector2d p = convexHull.get(i);
-            SvgFormatter.circle(p, 5, "black", "yellow");
+            SvgFormatter.circle(pw, p, 5, "black", "yellow");
         }
 
-        outputCalipers();
+        outputCalipers(pw);
 
-        SvgFormatter.endSvg();
+        SvgFormatter.endSvg(pw);
         System.out.println("<hr>");
     }
 
-    void doRotatingIterations() {
+    void doRotatingIterations() throws FileNotFoundException {
         double overallAngle = 0;
         int iteration = 0;
 
@@ -227,7 +232,7 @@ public class Main {
         System.out.println("</body></html>");
     }
 
-    void outputFinalResult() {
+    void outputFinalResult() throws FileNotFoundException {
         System.out.println("Minimal area = " + minArea+"<br>");
         System.out.println("Rectangle corners coordinates:<br>");
         System.out.println("<ul>");
@@ -237,19 +242,21 @@ public class Main {
         }
         System.out.println("</ul>");
         
-        SvgFormatter.startSvg(imageWidth, imageHeight);
+        PrintWriter pw = new PrintWriter(new File("img"+(svgCount++)+".svg"));
+        // this will later be converted to png!
+        SvgFormatter.startSvg("img"+svgCount+".png", pw, imageWidth, imageHeight);
         
-        SvgFormatter.points(originalImage, "black");
-        SvgFormatter.polygon(convexHull, "red");
+        SvgFormatter.points(pw, originalImage, "black");
+        SvgFormatter.polygon(pw, convexHull, "red");
         
         for (int i = 0; i < rect.length; i++) {
-            SvgFormatter.line(rect[i], rect[(i+1)%rect.length], "blue");
+            SvgFormatter.line(pw, rect[i], rect[(i+1)%rect.length], "blue");
         }
         
-        SvgFormatter.endSvg();
+        SvgFormatter.endSvg(pw);
     }
 
-    void main() {
+    void main() throws FileNotFoundException {
         inputPoints();
         calculateAngles();
         findBoundingCoords();
