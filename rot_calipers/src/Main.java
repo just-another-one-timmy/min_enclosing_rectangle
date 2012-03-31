@@ -162,11 +162,10 @@ public class Main {
             System.out.println("<li>" + toDeg(a) + "</li>");
         }
         System.out.println("</ul>");
-        System.out.println("<br>Preparing to rotate by " + minAngle + " degrees<br>");
 
         PrintWriter pw = new PrintWriter(new File("img"+(svgCount++)+".svg"));
         // this will be later converted to png!
-        SvgFormatter.startSvg("img"+svgCount+".png", pw, imageWidth, imageHeight);
+        SvgFormatter.startSvg("img"+(svgCount-1)+".png", pw, imageWidth, imageHeight);
         SvgFormatter.points(pw, originalImage, "black");
         SvgFormatter.polygon(pw, convexHull, "darkGreen");
 
@@ -178,6 +177,7 @@ public class Main {
         outputCalipers(pw);
 
         SvgFormatter.endSvg(pw);
+        System.out.println("<br>Preparing to rotate by " + minAngle + " degrees<br>");
         System.out.println("<hr>");
     }
 
@@ -244,7 +244,7 @@ public class Main {
         
         PrintWriter pw = new PrintWriter(new File("img"+(svgCount++)+".svg"));
         // this will later be converted to png!
-        SvgFormatter.startSvg("img"+svgCount+".png", pw, imageWidth, imageHeight);
+        SvgFormatter.startSvg("img"+(svgCount-1)+".png", pw, imageWidth, imageHeight);
         
         SvgFormatter.points(pw, originalImage, "black");
         SvgFormatter.polygon(pw, convexHull, "red");
