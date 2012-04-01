@@ -1,5 +1,5 @@
-#author bunyk
 #!/usr/bin/python
+#author bunyk
 import re
 from itertools import islice
 from math import sqrt
