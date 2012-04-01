@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# converts every .svg file in current directory
+# to the .png file in imgs/
 mkdir "imgs";
 foreach $file (<*.svg>) {
     if ($file =~ /(.*?).svg/g){

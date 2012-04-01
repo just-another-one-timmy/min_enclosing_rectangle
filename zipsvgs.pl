@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# this script runs svg_zip.py on every .svg file in current dir
+# original file will be replaced with it's 'zipped' version
 mkdir "imgs";
 foreach $file (<*.svg>) {
     if ($file =~ /(.*?).svg/g){

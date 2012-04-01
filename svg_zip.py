@@ -1,3 +1,4 @@
+#author bunyk
 #!/usr/bin/python
 import re
 from itertools import islice
