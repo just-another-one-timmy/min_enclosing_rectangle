@@ -11,6 +11,8 @@ public class Main {
     public static void main(String[] args) throws FileNotFoundException {
         new Main().main();
     }
+
+    // {{{
     ArrayList<Vector2d> originalImage = null;
     int imageWidth = 0, imageHeight = 0;
     ArrayList<Vector2d> convexHull = null;
@@ -18,6 +20,8 @@ public class Main {
     ArrayList<Double> cosAngles = null, angles = null;
     double left, right, top, bottom;
     Vector2d[] calipers = null;
+
+    // }}}
     // which point caliper is touching; if there are two, then last in caliper's direction
     int[] pointNumber = null;
     // angle between caliper and next edge
@@ -154,8 +158,8 @@ public class Main {
     }
 
     void outputCurrentSituation(double minAngle, double overallAngle, int iteration, double currentArea) throws FileNotFoundException {
-        System.out.println("Iteration #" + iteration + "<br>");
-        System.out.println("Overall angle = " + overallAngle);
+        System.out.println("Iteration #" + iteration + " (rotating by <b>" + minAngle +"</b>)<br>");
+	System.out.println("Overall angle = " + overallAngle);
         System.out.println("Current area = " + currentArea);
         System.out.println("<br>Calipers angles are: <ul>");
         for (double a : caliperAngles) {
@@ -175,9 +179,7 @@ public class Main {
         }
 
         outputCalipers(pw);
-
         SvgFormatter.endSvg(pw);
-        System.out.println("<br>Preparing to rotate by " + minAngle + " degrees<br>");
         System.out.println("<hr>");
     }
 

@@ -33,7 +33,7 @@ public class SvgFormatter {
     }
 
     public static void startSvg(String svgFileName, PrintWriter pw, int width, int height) {
-        System.out.println("<image src=\"imgs/" + svgFileName + "\" />");
+        System.out.println("<image border=\"1\" src=\"imgs/" + svgFileName + "\" />");
         pw.println("<svg width='" + width + "' height='" + height +"'>");
     }
 
